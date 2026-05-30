@@ -71,6 +71,15 @@ class ChichiPuiPlatform(BaseBlogPlatform):
     async def _post(self, params: PublishParams, image_paths: list[str]) -> None:
         meta = parse_post_meta(Path(params.post_file).read_text(encoding="utf-8"))
 
+        # サムネイル（=先頭画像）を決定する。
+        # ちちぷいは最初にアップロードした画像がカバー画像になる仕様のため、
+        # thumbnail 指定があればそれを先頭に並び替える。
+        if params.thumbnail:
+            thumb = str(Path(params.thumbnail).resolve())
+            ordered = [thumb] + [p for p in image_paths if Path(p).resolve() != Path(thumb).resolve()]
+        else:
+            ordered = image_paths
+
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=False)
             context = await browser.new_context(storage_state=str(self.auth_path))
@@ -85,9 +94,9 @@ class ChichiPuiPlatform(BaseBlogPlatform):
                     "セッションが切れています。tools/save_auth.py を再実行してください"
                 )
 
-            # 画像アップロード
+            # 画像アップロード（先頭がカバー画像）
             upload_input = page.locator("input.image_posts_upload_image_input").first
-            await upload_input.set_input_files(image_paths)
+            await upload_input.set_input_files(ordered)
             await page.wait_for_timeout(1500)
 
             # タイトル（必須）
