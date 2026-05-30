@@ -1,0 +1,14 @@
+# プラットフォームごとの URL・セレクタ等。機密情報（ID/パスワード）は .env に置く。
+# 値は note 実装フェーズで playwright codegen の結果を見て確定する（現状は枠）。
+
+note:
+  login_url: "https://note.com/login"
+  editor_url: "https://note.com/notes/new"
+  selectors:
+    # 例: email_input: 'input[name="email"]'
+    email_input: ""
+    password_input: ""
+    login_button: ""
+    import_button: ""
+    image_upload_input: ""
+    thumbnail_button: ""
