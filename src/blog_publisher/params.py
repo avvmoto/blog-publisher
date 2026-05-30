@@ -16,7 +16,7 @@ IMAGE_EXTENSIONS: frozenset[str] = frozenset(
 )
 
 # 対応を「意図している」サイト。実装済みかどうかは get_platform() 側で判定する。
-SUPPORTED_SITES: frozenset[str] = frozenset({"note"})
+SUPPORTED_SITES: frozenset[str] = frozenset({"note", "chichipui"})
 
 
 class ValidationError(ValueError):

@@ -88,3 +88,7 @@ def publish(
 
     image_paths = collect_image_paths(image_dir)
     platform.run(params, image_paths)
+
+
+# プラットフォーム実装を登録する（register が定義された後に import する）。
+from . import platforms  # noqa: E402, F401

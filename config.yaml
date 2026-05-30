@@ -1,6 +1,11 @@
 # プラットフォームごとの URL・セレクタ等。機密情報（ID/パスワード）は .env に置く。
 # 値は note 実装フェーズで playwright codegen の結果を見て確定する（現状は枠）。
 
+chichipui:
+  upload_url: "https://www.chichi-pui.com/posts/upload/"
+  default_age_limit: 1   # 1=全年齢, 4=R-15, 2=R-18, 3=R-18G
+  default_taste: 1       # 1=イラスト, 2=フォト, 99=未分類
+
 note:
   login_url: "https://note.com/login"
   editor_url: "https://note.com/notes/new"
