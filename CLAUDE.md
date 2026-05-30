@@ -68,6 +68,36 @@ publish(
 
 # Claude Code Rules
 
+## PR workflow
+
+機能追加・バグ修正はすべてフィーチャーブランチ → PR 経由。`main` への直接コミット・プッシュ禁止。
+
+```bash
+# ブランチ作成
+git switch -c feat/<short-description>
+
+# 実装 → コミット（複数可）
+
+# PR 作成
+gh pr create --title "<title>" --body "$(cat <<'EOF'
+## What & Why
+
+<説明>
+
+## Checklist
+
+- [x] ruff passes
+- [x] mypy passes
+- [x] pytest passes
+EOF
+)"
+```
+
+- ブランチ名は `feat/`, `fix/`, `chore/` プレフィックスを付ける
+- PR タイトルは英語・70文字以内
+- CI (ruff / mypy / pytest) が全部グリーンになってからマージする
+- マージ後はブランチを削除する: `git branch -d feat/<name>`
+
 ## Git commits
 
 - Never stage `auth/` or any file containing secrets/credentials
