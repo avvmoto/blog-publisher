@@ -53,8 +53,16 @@ publish(
 ## 技術スタック
 
 - Python 3.12+
-- Playwright (Python)
+- Playwright (Python) + playwright-stealth（Cloudflare対策）
 - uv（パッケージ管理）
+- ruff（リンター）、mypy（型チェック）、pytest（テスト）
+
+## 対応済みプラットフォーム
+
+| サイト | 認証方式 | ステータス |
+|--------|----------|-----------|
+| ちちぷい (chichi-pui.com) | Google OAuth → storage_state | ✅ 実装済み |
+| note.com | メール/パスワード → .env | 🔲 未実装 |
 
 ---
 
@@ -68,6 +76,65 @@ publish(
 - Always create a new commit (never amend without explicit instruction)
 - Commit message: concise English, focus on "why" not "what"
 - Always append `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
+
+## コード品質チェック（コミット前に必ず実行）
+
+```bash
+uv run ruff check src/ tests/   # エラーがあれば修正してから commit
+uv run mypy src/                # Success: no issues found であること
+uv run pytest -q                # 全テスト通過であること
+```
+
+ruff の自動修正: `uv run ruff check --fix src/ tests/`
+
+## ロギング
+
+ライブラリコード内では `print()` を使わない。必ず `logging` モジュールを使う。
+
+```python
+import logging
+logger = logging.getLogger(__name__)
+
+logger.info("投稿完了: %s", url)     # 正常系
+logger.warning("...")                # 注意
+logger.error("...")                  # エラー
+```
+
+呼び出し側（ユーザーのスクリプト）が `logging.basicConfig()` でレベルを制御する。
+
+## エラーハンドリング
+
+ユーザーが「何をすれば直るか」分かるメッセージを返す。例外の種類を使い分ける。
+
+| 状況 | 使う例外 |
+|------|----------|
+| ファイルが存在しない | `FileNotFoundError("...パス...")` |
+| 設定値・入力値が不正 | `ValueError("...何が不正か...")` |
+| ブラウザ操作の失敗（Cloudflare・セッション切れ等） | `RuntimeError("...復旧手順...")` |
+
+Playwright の `TimeoutError` は必ず catch し、「投稿完了している可能性がある」など復旧ヒントを添えて `RuntimeError` に変換する。
+
+## デバッグ用スクリプト
+
+調査・確認のために作る一時スクリプト（`tools/dump_*.py` 等）は `.gitignore` に追加する。
+リポジトリに入れない。
+
+## CHANGELOG
+
+機能追加・バグ修正を行ったら `CHANGELOG.md` の `[Unreleased]` セクションに記載する。
+リリース時に `[Unreleased]` → バージョン番号に変える。
+
+## 新プラットフォーム追加時のチェックリスト
+
+1. `params.py` の `SUPPORTED_SITES` に追加
+2. `src/blog_publisher/platforms/<name>.py` を作成し `@register("<name>")` を付ける
+3. `src/blog_publisher/platforms/__init__.py` に `from . import <name>` を追加
+4. `config.yaml` に設定セクションを追加
+5. `examples/post_<name>.yaml` を追加（利用例）
+6. `CHANGELOG.md` の `[Unreleased]` に記載
+7. README の対応プラットフォーム表を更新
+8. 純粋ロジック（パーサー等）のテストを `tests/test_<name>.py` に追加
+9. ruff・mypy・pytest を通してからコミット
 
 # AI Guidelines (Senior Engineer / Pragmatic TDD)
 
