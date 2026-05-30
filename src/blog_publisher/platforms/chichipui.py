@@ -11,11 +11,13 @@ Cloudflare対策: playwright-stealth を使用。
 from __future__ import annotations
 
 import asyncio
+import logging
 import re
 from pathlib import Path
 from typing import Sequence
 
 import yaml
+from playwright.async_api import TimeoutError as PlaywrightTimeout
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
 
@@ -23,7 +25,10 @@ from blog_publisher import register
 from blog_publisher.base import BaseBlogPlatform
 from blog_publisher.params import PublishParams
 
+logger = logging.getLogger(__name__)
+
 UPLOAD_URL = "https://www.chichi-pui.com/posts/upload/"
+_POST_URL_PATTERN = re.compile(r".+/posts/[a-z0-9-]+/$")
 
 
 def parse_post_meta(content: str) -> dict:
@@ -60,25 +65,48 @@ class ChichiPuiPlatform(BaseBlogPlatform):
     login / import_article / upload_images / set_thumbnail はスタブ。
     """
 
-    def login(self) -> None: ...
-    def import_article(self, post_file: str) -> None: ...
-    def upload_images(self, image_paths: Sequence[str]) -> None: ...
-    def set_thumbnail(self, thumbnail: str) -> None: ...
+    def login(self) -> None:
+        pass
+
+    def import_article(self, post_file: str) -> None:
+        pass
+
+    def upload_images(self, image_paths: Sequence[str]) -> None:
+        pass
+
+    def set_thumbnail(self, thumbnail: str) -> None:
+        pass
 
     def run(self, params: PublishParams, image_paths: Sequence[str]) -> None:
         asyncio.run(self._post(params, list(image_paths)))
 
     async def _post(self, params: PublishParams, image_paths: list[str]) -> None:
-        meta = parse_post_meta(Path(params.post_file).read_text(encoding="utf-8"))
+        post_file = Path(params.post_file)
+        if not post_file.exists():
+            raise FileNotFoundError(f"post_file が見つかりません: {params.post_file}")
+
+        meta = parse_post_meta(post_file.read_text(encoding="utf-8"))
+
+        if not meta.get("title"):
+            raise ValueError("post_file に title が設定されていません")
 
         # サムネイル（=先頭画像）を決定する。
         # ちちぷいは最初にアップロードした画像がカバー画像になる仕様のため、
         # thumbnail 指定があればそれを先頭に並び替える。
         if params.thumbnail:
-            thumb = str(Path(params.thumbnail).resolve())
-            ordered = [thumb] + [p for p in image_paths if Path(p).resolve() != Path(thumb).resolve()]
+            thumb = Path(params.thumbnail).resolve()
+            ordered = [str(thumb)] + [
+                p for p in image_paths if Path(p).resolve() != thumb
+            ]
         else:
             ordered = image_paths
+
+        if not ordered:
+            raise ValueError("アップロードする画像がありません")
+
+        missing = [p for p in ordered if not Path(p).exists()]
+        if missing:
+            raise FileNotFoundError(f"画像ファイルが見つかりません: {missing}")
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=False)
@@ -86,7 +114,17 @@ class ChichiPuiPlatform(BaseBlogPlatform):
             await Stealth().apply_stealth_async(context)
             page = await context.new_page()
 
-            await page.goto(UPLOAD_URL, wait_until="networkidle")
+            try:
+                await page.goto(UPLOAD_URL, wait_until="networkidle")
+            except Exception as e:
+                raise RuntimeError(f"投稿ページへのアクセスに失敗しました: {e}") from e
+
+            title = await page.title()
+            if "Cloudflare" in title or "Attention Required" in title:
+                await browser.close()
+                raise RuntimeError(
+                    "Cloudflare にブロックされました。しばらく待ってから再試行してください"
+                )
 
             if "login" in page.url:
                 await browser.close()
@@ -94,18 +132,20 @@ class ChichiPuiPlatform(BaseBlogPlatform):
                     "セッションが切れています。tools/save_auth.py を再実行してください"
                 )
 
+            logger.info("投稿ページを開きました: %s", page.url)
+
             # 画像アップロード（先頭がカバー画像）
+            logger.info("画像をアップロード中: %d 枚", len(ordered))
             upload_input = page.locator("input.image_posts_upload_image_input").first
             await upload_input.set_input_files(ordered)
             await page.wait_for_timeout(1500)
 
             # タイトル（必須）
-            title = meta.get("title", "")
-            await page.fill("input[name='title']", title)
+            await page.fill("input[name='title']", meta["title"])
 
             # キャプション
             if caption := meta.get("caption", ""):
-                await page.fill("textarea[name='caption']", caption)
+                await page.fill("textarea[name='caption']", str(caption))
 
             # タグ（Enterで1件ずつ追加）
             tag_input = page.locator("input[placeholder*='タグを入力']")
@@ -123,10 +163,17 @@ class ChichiPuiPlatform(BaseBlogPlatform):
             await page.check(f"input[name='taste'][value='{taste}']")
 
             # 投稿する
+            logger.info("投稿ボタンをクリックします")
             await page.locator("button.button.is-primary.is-large").click()
-            await page.wait_for_url(
-                re.compile(r".+/posts/[a-z0-9-]+/$"), timeout=30_000
-            )
-            print(f"✓ 投稿完了: {page.url}")
 
+            try:
+                await page.wait_for_url(_POST_URL_PATTERN, timeout=30_000)
+            except PlaywrightTimeout as e:
+                await browser.close()
+                raise RuntimeError(
+                    "投稿後のページ遷移がタイムアウトしました。"
+                    "投稿は完了している可能性があります。ちちぷいで確認してください。"
+                ) from e
+
+            logger.info("投稿完了: %s", page.url)
             await browser.close()

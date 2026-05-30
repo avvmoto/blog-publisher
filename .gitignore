@@ -3,6 +3,9 @@
 auth/*
 !auth/.gitkeep
 
+# --- dev tools (not for end users) ---
+tools/dump_post_ui.py
+
 # --- Python ---
 __pycache__/
 *.py[cod]

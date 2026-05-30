@@ -1,0 +1,18 @@
+# ちちぷい投稿ファイルのサンプル
+# publish(site="chichipui", post_file="examples/post.yaml", image_dir="images/") で使う
+
+title: "投稿タイトル"
+
+caption: |
+  キャプションを書く（任意）。
+  複数行もOK。
+
+tags:
+  - 女の子
+  - オリジナル
+
+# 年齢制限: 1=全年齢, 4=R-15, 2=R-18, 3=R-18G
+age_limit: 1
+
+# テイスト: 1=イラスト, 2=フォト, 99=未分類
+taste: 1

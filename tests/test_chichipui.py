@@ -4,8 +4,6 @@
 （CLAUDE.md 2a）。
 """
 
-import pytest
-
 from blog_publisher.platforms.chichipui import parse_post_meta
 
 
