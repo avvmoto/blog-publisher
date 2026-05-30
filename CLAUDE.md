@@ -77,12 +77,13 @@ publish(
 - Commit message: concise English, focus on "why" not "what"
 - Always append `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
 
-## コード品質チェック（コミット前に必ず実行）
+## コード品質チェック（pre-commit hook で自動実行）
+
+`.githooks/pre-commit` が ruff・mypy・pytest を自動実行する。
+hook は初回セットアップ時に一度だけ有効化が必要:
 
 ```bash
-uv run ruff check src/ tests/   # エラーがあれば修正してから commit
-uv run mypy src/                # Success: no issues found であること
-uv run pytest -q                # 全テスト通過であること
+git config core.hooksPath .githooks
 ```
 
 ruff の自動修正: `uv run ruff check --fix src/ tests/`
@@ -119,11 +120,6 @@ Playwright の `TimeoutError` は必ず catch し、「投稿完了している�
 調査・確認のために作る一時スクリプト（`tools/dump_*.py` 等）は `.gitignore` に追加する。
 リポジトリに入れない。
 
-## CHANGELOG
-
-機能追加・バグ修正を行ったら `CHANGELOG.md` の `[Unreleased]` セクションに記載する。
-リリース時に `[Unreleased]` → バージョン番号に変える。
-
 ## 新プラットフォーム追加時のチェックリスト
 
 1. `params.py` の `SUPPORTED_SITES` に追加
@@ -131,10 +127,9 @@ Playwright の `TimeoutError` は必ず catch し、「投稿完了している�
 3. `src/blog_publisher/platforms/__init__.py` に `from . import <name>` を追加
 4. `config.yaml` に設定セクションを追加
 5. `examples/post_<name>.yaml` を追加（利用例）
-6. `CHANGELOG.md` の `[Unreleased]` に記載
-7. README の対応プラットフォーム表を更新
-8. 純粋ロジック（パーサー等）のテストを `tests/test_<name>.py` に追加
-9. ruff・mypy・pytest を通してからコミット
+6. README の対応プラットフォーム表を更新
+7. 純粋ロジック（パーサー等）のテストを `tests/test_<name>.py` に追加
+8. コミット（pre-commit hook が ruff・mypy・pytest を自動検証する）
 
 # AI Guidelines (Senior Engineer / Pragmatic TDD)
 

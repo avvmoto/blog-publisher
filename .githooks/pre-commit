@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+echo "▶ ruff..."
+uv run ruff check src/ tests/
+
+echo "▶ mypy..."
+uv run mypy src/ --no-error-summary
+
+echo "▶ pytest..."
+uv run pytest -q
+
+echo "✓ all checks passed"
