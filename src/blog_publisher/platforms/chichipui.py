@@ -147,6 +147,10 @@ class ChichiPuiPlatform(BaseBlogPlatform):
             if caption := meta.get("caption", ""):
                 await page.fill("textarea[name='caption']", str(caption))
 
+            # プロンプト（AI生成画像の生成プロンプト）
+            if prompt := meta.get("prompt", ""):
+                await page.fill("textarea[name='prompt']", str(prompt))
+
             # タグ（Enterで1件ずつ追加）
             tag_input = page.locator("input[placeholder*='タグを入力']")
             for tag in meta.get("tags", []):

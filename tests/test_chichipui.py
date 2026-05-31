@@ -44,3 +44,13 @@ def test_数値フィールドを正しく読む():
     meta = parse_post_meta("title: T\nage_limit: 2\ntaste: 1")
     assert meta["age_limit"] == 2
     assert meta["taste"] == 1
+
+
+def test_promptフィールドを正しく読む():
+    meta = parse_post_meta("title: T\nprompt: '1girl, solo, smile'")
+    assert meta["prompt"] == "1girl, solo, smile"
+
+
+def test_promptが未指定のとき存在しない():
+    meta = parse_post_meta("title: T\ncaption: キャプション")
+    assert "prompt" not in meta

@@ -16,3 +16,8 @@ age_limit: 1
 
 # テイスト: 1=イラスト, 2=フォト, 99=未分類
 taste: 1
+
+# AI生成プロンプト（任意）
+prompt: |
+  1girl, solo, smile, looking at viewer
+  masterpiece, best quality
