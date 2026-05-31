@@ -10,10 +10,18 @@ note:
   login_url: "https://note.com/login"
   editor_url: "https://note.com/notes/new"
   selectors:
-    # 例: email_input: 'input[name="email"]'
-    email_input: ""
-    password_input: ""
-    login_button: ""
-    import_button: ""
-    image_upload_input: ""
-    thumbnail_button: ""
+    # ログインフォーム（デフォルトは note.com の標準 HTML name 属性）
+    email_input: 'input[name="email"]'
+    password_input: 'input[name="password"]'
+    login_button: 'button[type="submit"]'
+    # エディター: タイトルと本文（codegen で確認・更新推奨）
+    title_input: '[data-placeholder="タイトル"]'
+    body_input: ".ProseMirror"
+    # インライン画像のアップロード用 file input
+    image_upload_input: 'input[type="file"][accept*="image"]'
+    # ヘッダー画像ボタン（公開設定モーダル内）
+    thumbnail_button: 'button[aria-label*="ヘッダー"]'
+    # 公開フロー
+    publish_button: 'button:has-text("公開設定")'
+    tag_input: 'input[placeholder*="タグ"]'
+    post_button: 'button:has-text("投稿する")'
