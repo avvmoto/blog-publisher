@@ -6,11 +6,20 @@ Playwright で自動化する Python ライブラリ。他リポジトリから 
 ```python
 from blog_publisher import publish
 
+# ちちぷい
 publish(
     site="chichipui",
     post_file="post.yaml",
     image_dir="output/images/",
     thumbnail="output/thumb.png",  # 省略可。指定するとカバー画像になる
+)
+
+# note.com
+publish(
+    site="note",
+    post_file="output/post.md",   # Markdown frontmatter（title/tags）+ 本文
+    image_dir="output/images/",
+    thumbnail="output/thumb.jpg",  # 省略可。ヘッダー画像になる
 )
 ```
 
@@ -53,11 +62,7 @@ uv run playwright install chromium
 
 ### note.com（メール/パスワードログイン）
 
-`.env.example` をコピーして記入:
-
-```bash
-cp .env.example .env
-```
+`.env` に記入するだけ。初回実行時に自動でログイン→セッション保存される。
 
 ```env
 NOTE_EMAIL=your@email.com
@@ -70,7 +75,9 @@ NOTE_PASSWORD=yourpassword
 
 ## 通常の使い方
 
-### 投稿ファイル（YAML）
+### 投稿ファイル形式
+
+**ちちぷい（YAML）**
 
 ```yaml
 # post.yaml
@@ -81,17 +88,21 @@ tags:
   - オリジナル
 age_limit: 1   # 1=全年齢, 4=R-15, 2=R-18, 3=R-18G
 taste: 1       # 1=イラスト, 2=フォト, 99=未分類
+prompt: |      # AI生成プロンプト（任意）
+  1girl, solo
 ```
 
-Markdown の frontmatter 形式も使える:
+**note.com（Markdown frontmatter）**
 
 ```markdown
 ---
-title: "投稿タイトル"
-tags: [女の子]
-age_limit: 1
-taste: 1
+title: "記事タイトル"
+tags:
+  - タグ1
+  - タグ2
 ---
+
+記事本文をここに書く。
 ```
 
 ### 投稿実行
@@ -99,11 +110,20 @@ taste: 1
 ```python
 from blog_publisher import publish
 
+# ちちぷい
 publish(
     site="chichipui",
     post_file="post.yaml",
-    image_dir="images/",          # フォルダ内の画像を全てアップロード
-    thumbnail="images/cover.png", # 省略可。カバー画像を先頭にする
+    image_dir="images/",
+    thumbnail="images/cover.png",
+)
+
+# note.com
+publish(
+    site="note",
+    post_file="post.md",
+    image_dir="images/",
+    thumbnail="images/cover.jpg",  # ヘッダー画像
 )
 ```
 
@@ -115,14 +135,15 @@ publish(
 blog-publisher/
 ├── src/blog_publisher/       # ライブラリ本体
 │   ├── platforms/
-│   │   └── chichipui.py      # ちちぷい実装
+│   │   ├── chichipui.py      # ちちぷい実装
+│   │   └── note.py           # note.com 実装
 │   ├── base.py               # BaseBlogPlatform (ABC)
 │   ├── params.py             # PublishParams・バリデーション
 │   └── config.py             # 設定・環境変数ローダー
 ├── tools/
-│   └── save_auth.py          # 初回ログイン用ヘルパー
+│   └── save_auth.py          # ちちぷい初回ログイン用ヘルパー
 ├── auth/                     # セッション保存先（git管理外）
-├── config.yaml               # URL・デフォルト値
+├── config.yaml               # URL・セレクター・デフォルト値
 └── .env                      # 機密情報（git管理外）
 ```
 
@@ -133,4 +154,4 @@ blog-publisher/
 | サイト | 認証方式 | 状態 |
 |--------|----------|------|
 | ちちぷい (chichi-pui.com) | Google OAuth | ✅ 実装済み |
-| note.com | メール/パスワード | 🔲 未実装 |
+| note.com | メール/パスワード | ✅ 実装済み |

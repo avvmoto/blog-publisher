@@ -62,7 +62,7 @@ publish(
 | サイト | 認証方式 | ステータス |
 |--------|----------|-----------|
 | ちちぷい (chichi-pui.com) | Google OAuth → storage_state | ✅ 実装済み |
-| note.com | メール/パスワード → .env | 🔲 未実装 |
+| note.com | メール/パスワード → .env | ✅ 実装済み |
 
 ---
 
