@@ -1,10 +1,7 @@
-## What & Why
+## Summary
 
-<!-- 何を・なぜ変えるか1〜2文で -->
+<!-- 何を・なぜ変えるか -->
 
-## Checklist
+## Design decisions
 
-- [ ] `uv run ruff check src/ tests/` passes
-- [ ] `uv run mypy src/` passes
-- [ ] `uv run pytest` passes
-- [ ] 新プラットフォーム追加の場合、CLAUDE.md のチェックリストを消化した
+<!-- 非自明な実装選択のみ。なければ削除 -->
