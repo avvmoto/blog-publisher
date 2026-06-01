@@ -1,5 +1,4 @@
 # プラットフォームごとの URL・セレクタ等。機密情報（ID/パスワード）は .env に置く。
-# 値は note 実装フェーズで playwright codegen の結果を見て確定する（現状は枠）。
 
 chichipui:
   upload_url: "https://www.chichi-pui.com/posts/upload/"
@@ -8,20 +7,18 @@ chichipui:
 
 note:
   login_url: "https://note.com/login"
-  editor_url: "https://note.com/notes/new"
+  editor_url: "https://note.com/notes/new"  # → editor.note.com/notes/{id}/edit/ へリダイレクト
   selectors:
-    # ログインフォーム（デフォルトは note.com の標準 HTML name 属性）
-    email_input: 'input[name="email"]'
-    password_input: 'input[name="password"]'
-    login_button: 'button[type="submit"]'
-    # エディター: タイトルと本文（codegen で確認・更新推奨）
-    title_input: '[data-placeholder="タイトル"]'
-    body_input: ".ProseMirror"
-    # インライン画像のアップロード用 file input
-    image_upload_input: 'input[type="file"][accept*="image"]'
-    # ヘッダー画像ボタン（公開設定モーダル内）
-    thumbnail_button: 'button[aria-label*="ヘッダー"]'
-    # 公開フロー
-    publish_button: 'button:has-text("公開設定")'
-    tag_input: 'input[placeholder*="タグ"]'
+    # ログインフォーム（DOM 実測済み 2026-06-01）
+    email_input: "#email"
+    password_input: "#password"
+    login_button: 'button:has-text("ログイン")'
+    # エディター（DOM 実測済み 2026-06-01）
+    title_input: 'textarea[placeholder="記事タイトル"]'
+    body_input: '[role="textbox"].ProseMirror'
+    # ヘッダー画像ボタン（DOM 実測済み 2026-06-01）
+    thumbnail_button: 'button[aria-label="画像を追加"]'
+    # 公開フロー（DOM 実測済み 2026-06-01 / モーダル内タグ・投稿ボタンは未実測）
+    publish_button: 'button:has-text("公開に進む")'
+    tag_input: 'input[placeholder="ハッシュタグを追加する"]'  # DOM実測済み
     post_button: 'button:has-text("投稿する")'
