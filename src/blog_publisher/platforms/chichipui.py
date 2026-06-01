@@ -77,7 +77,9 @@ class ChichiPuiPlatform(BaseBlogPlatform):
     def set_thumbnail(self, thumbnail: str) -> None:
         pass
 
-    def run(self, params: PublishParams, image_paths: Sequence[str]) -> None:
+    def run(
+        self, params: PublishParams, image_paths: Sequence[str], dry_run: bool = False
+    ) -> None:
         asyncio.run(self._post(params, list(image_paths)))
 
     async def _post(self, params: PublishParams, image_paths: list[str]) -> None:
@@ -146,6 +148,10 @@ class ChichiPuiPlatform(BaseBlogPlatform):
             # キャプション
             if caption := meta.get("caption", ""):
                 await page.fill("textarea[name='caption']", str(caption))
+
+            # プロンプト（AI生成画像の生成プロンプト）
+            if prompt := meta.get("prompt", ""):
+                await page.fill("textarea[name='prompt']", str(prompt))
 
             # タグ（Enterで1件ずつ追加）
             tag_input = page.locator("input[placeholder*='タグを入力']")

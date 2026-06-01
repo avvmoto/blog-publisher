@@ -65,8 +65,11 @@ def publish(
     *,
     config_path: str | Path = "config.yaml",
     auth_dir: str | Path = "auth",
+    dry_run: bool = False,
 ) -> None:
     """ブログへ投稿する。本文・画像・サムネイルは生成済みである前提。
+
+    dry_run=True のときは公開直前で止まる（タイトル・本文・画像まで入力して停止）。
 
     I/O 境界として、検証 → 設定/認証読込 → 画像収集を行ってから、
     プラットフォーム実装の副作用メソッド群を run() で実行する。
@@ -87,7 +90,7 @@ def publish(
     )
 
     image_paths = collect_image_paths(image_dir)
-    platform.run(params, image_paths)
+    platform.run(params, image_paths, dry_run=dry_run)
 
 
 # プラットフォーム実装を登録する（register が定義された後に import する）。
