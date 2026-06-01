@@ -77,7 +77,9 @@ class ChichiPuiPlatform(BaseBlogPlatform):
     def set_thumbnail(self, thumbnail: str) -> None:
         pass
 
-    def run(self, params: PublishParams, image_paths: Sequence[str]) -> None:
+    def run(
+        self, params: PublishParams, image_paths: Sequence[str], dry_run: bool = False
+    ) -> None:
         asyncio.run(self._post(params, list(image_paths)))
 
     async def _post(self, params: PublishParams, image_paths: list[str]) -> None:

@@ -48,9 +48,12 @@ class BaseBlogPlatform(ABC):
     def set_thumbnail(self, thumbnail: str) -> None:
         """指定の1枚をサムネイルに設定する。"""
 
-    def run(self, params: PublishParams, image_paths: Sequence[str]) -> None:
+    def run(
+        self, params: PublishParams, image_paths: Sequence[str], dry_run: bool = False
+    ) -> None:
         """4ステップを定型順で実行するテンプレートメソッド。
 
+        dry_run=True のときは公開直前で止まる。
         image_paths は I/O 境界（publish）で収集・整列済みのものを受け取る。
         ここ自体はサブクラスの副作用メソッドを呼ぶだけで純粋ではない。
         """

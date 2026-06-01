@@ -62,7 +62,7 @@ publish(
 | サイト | 認証方式 | ステータス |
 |--------|----------|-----------|
 | ちちぷい (chichi-pui.com) | Google OAuth → storage_state | ✅ 実装済み |
-| note.com | メール/パスワード → .env | 🔲 未実装 |
+| note.com | メール/パスワード → .env | ✅ 実装済み |
 
 ---
 
@@ -152,14 +152,25 @@ Playwright の `TimeoutError` は必ず catch し、「投稿完了している�
 
 ## 新プラットフォーム追加時のチェックリスト
 
+### Step 0（必須）：操作を録画してセレクターを確定する
+
+コードを一行も書く前に `playwright codegen` でログインから公開設定まで通しで録画し、セレクターを `config.yaml` に書いてから実装を始める。
+
+```bash
+uv run playwright codegen https://<site-url>
+```
+
+### Step 1〜：実装
+
 1. `params.py` の `SUPPORTED_SITES` に追加
 2. `src/blog_publisher/platforms/<name>.py` を作成し `@register("<name>")` を付ける
 3. `src/blog_publisher/platforms/__init__.py` に `from . import <name>` を追加
-4. `config.yaml` に設定セクションを追加
-5. `examples/post_<name>.yaml` を追加（利用例）
-6. README の対応プラットフォーム表を更新
+4. `config.yaml` に設定セクションを追加（Step 0 で確定したセレクターを記入）
+5. `examples/post_<name>.md` を追加（利用例）
+6. README・CLAUDE.md の対応プラットフォーム表を更新
 7. 純粋ロジック（パーサー等）のテストを `tests/test_<name>.py` に追加
-8. コミット（pre-commit hook が ruff・mypy・pytest を自動検証する）
+8. `publish(dry_run=True)` で本文→画像→公開設定ページまで動作確認してからコミット
+9. コミット（pre-commit hook が ruff・mypy・pytest を自動検証する）
 
 # AI Guidelines (Senior Engineer / Pragmatic TDD)
 
@@ -201,7 +212,7 @@ Playwright の `TimeoutError` は必ず catch し、「投稿完了している�
 - **設定と機密情報の分離:** セレクタ・URLは `config.yaml`、ID/パスワードは `.env` から `os.getenv` 経由で読み込む。ソースコードにベタ書きしない。
 - **認証状態の保存・再利用:** ログインは初回のみ手動実施し `auth/<platform>.json` に `storage_state` として保存。以降は保存済み状態を使う。`auth/` は `.gitignore` に必須。
 - **パラメータ化:** 投稿ファイル・画像フォルダ・サムネイルはCLI引数で受け取る。ハードコード禁止。
-- **コードgen活用:** 新プラットフォーム追加時は `playwright codegen <url>` で操作を録画し、たたき台を生成してからリファクタする。
+- **コードgen活用:** 新プラットフォーム追加時は `playwright codegen <url>` で操作を録画し、たたき台を生成してからリファクタする。セレクターを推測で書き始めない。
 
 ## 4. シニアエンジニアの思考
 - **KISS & YAGNI:** 推測による過剰な抽象化を避け、テストを通すための最短・最簡潔な実装を行う。
